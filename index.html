@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Email Verifier Pro</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+      padding: 40px;
+      text-align: center;
+      color: white;
+    }
+
+    .header h1 {
+      font-size: 2.5em;
+      margin-bottom: 10px;
+      font-weight: 300;
+    }
+
+    .header p {
+      font-size: 1.1em;
+      opacity: 0.9;
+    }
+
+    .main-content {
+      padding: 40px;
+    }
+
+    #drop-zone {
+      border: 3px dashed #e0e6ed;
+      padding: 60px 40px;
+      text-align: center;
+      background: #f8fafc;
+      border-radius: 15px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-bottom: 30px;
+    }
+
+    #drop-zone:hover, #drop-zone.hover {
+      border-color: #4facfe;
+      background: #f0f9ff;
+      transform: translateY(-2px);
+    }
+
+    #drop-zone .icon {
+      font-size: 3em;
+      margin-bottom: 15px;
+      color: #cbd5e0;
+    }
+
+    #drop-zone.hover .icon {
+      color: #4facfe;
+    }
+
+    #drop-zone h3 {
+      color: #2d3748;
+      margin-bottom: 10px;
+      font-size: 1.3em;
+    }
+
+    #drop-zone p {
+      color: #718096;
+      font-size: 0.95em;
+    }
+
+    .job-block {
+      border: 1px solid #e2e8f0;
+      border-radius: 15px;
+      padding: 25px;
+      margin: 20px 0;
+      background: white;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+      position: relative;
+      transition: transform 0.2s ease;
+    }
+
+    .job-block:hover {
+      transform: translateY(-2px);
+    }
+
+    .job-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .job-title {
+      font-weight: 600;
+      color: #2d3748;
+      font-size: 1.1em;
+    }
+
+    .close-job {
+      background: #fed7d7;
+      color: #c53030;
+      border: none;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: all 0.2s ease;
+    }
+
+    .close-job:hover {
+      background: #feb2b2;
+      transform: scale(1.1);
+    }
+
+    .progress-container {
+      background: #edf2f7;
+      border-radius: 10px;
+      overflow: hidden;
+      margin: 15px 0;
+      height: 8px;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+      width: 0%;
+      transition: width 0.3s ease;
+      border-radius: 10px;
+    }
+
+    .status-info {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin: 15px 0;
+    }
+
+    .status-item {
+      background: #f7fafc;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 0.9em;
+    }
+
+    .status-label {
+      color: #718096;
+      font-weight: 500;
+      margin-bottom: 5px;
+    }
+
+    .status-value {
+      color: #2d3748;
+      font-weight: 600;
+    }
+
+    .log-line {
+      font-size: 0.9em;
+      color: #718096;
+      background: #f7fafc;
+      padding: 10px;
+      border-radius: 6px;
+      margin: 10px 0;
+      font-family: 'Courier New', monospace;
+    }
+
+    .actions {
+      margin-top: 20px;
+    }
+
+    .action-section {
+      margin: 15px 0;
+    }
+
+    .action-title {
+      font-weight: 600;
+      color: #2d3748;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+    }
+
+    .action-title .icon {
+      margin-right: 8px;
+      font-size: 1.2em;
+    }
+
+    .download-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .download-btn {
+      display: inline-block;
+      padding: 10px 15px;
+      text-decoration: none;
+      border-radius: 8px;
+      text-align: center;
+      font-weight: 500;
+      font-size: 0.9em;
+      transition: all 0.2s ease;
+      border: 2px solid;
+    }
+
+    .download-btn.all {
+      background: #4299e1;
+      color: white;
+      border-color: #4299e1;
+    }
+
+    .download-btn.valid {
+      background: #48bb78;
+      color: white;
+      border-color: #48bb78;
+    }
+
+    .download-btn.risky {
+      background: #ed8936;
+      color: white;
+      border-color: #ed8936;
+    }
+
+    .download-btn.invalid {
+      background: #f56565;
+      color: white;
+      border-color: #f56565;
+    }
+
+    .download-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+
+    .new-verification-btn {
+      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 500;
+      cursor: pointer;
+      font-size: 1em;
+      transition: all 0.2s ease;
+      width: 100%;
+    }
+
+    .new-verification-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    }
+
+    .cancel-btn {
+      background: #fed7d7;
+      color: #c53030;
+      border: 2px solid #feb2b2;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 0.9em;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .cancel-btn:hover {
+      background: #feb2b2;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+      gap: 15px;
+      margin: 15px 0;
+      padding: 15px;
+      background: #f0f9ff;
+      border-radius: 10px;
+    }
+
+    .stat-item {
+      text-align: center;
+    }
+
+    .stat-number {
+      font-size: 1.5em;
+      font-weight: 700;
+      color: #2d3748;
+    }
+
+    .stat-label {
+      font-size: 0.8em;
+      color: #718096;
+      margin-top: 5px;
+    }
+
+    .footer {
+      background: #2d3748;
+      color: white;
+      padding: 30px;
+      text-align: center;
+    }
+
+    .footer a {
+      color: #4facfe;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+
+    .error-message {
+      background: #fed7d7;
+      color: #c53030;
+      padding: 15px;
+      border-radius: 10px;
+      margin: 15px 0;
+      border-left: 4px solid #f56565;
+    }
+
+    .success-message {
+      background: #c6f6d5;
+      color: #2f855a;
+      padding: 15px;
+      border-radius: 10px;
+      margin: 15px 0;
+      border-left: 4px solid #48bb78;
+    }
+
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #4facfe;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .message {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 15px 20px;
+      border-radius: 8px;
+      color: white;
+      z-index: 1000;
+      max-width: 400px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      opacity: 0;
+      transform: translateY(-20px);
+      transition: all 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #2d3748;
+      border-left: 4px solid #4a90e2;
+    }
+    
+    .message.error {
+      border-left-color: #ff4444;
+    }
+    
+    .message.success {
+      border-left-color: #00C851;
+    }
+    
+    .message-content {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .message-icon {
+      font-size: 1.2em;
+    }
+    
+    .close-message {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 1.5em;
+      cursor: pointer;
+      padding: 0 0 0 15px;
+      opacity: 0.7;
+      transition: opacity 0.2s;
+    }
+    
+    .close-message:hover {
+      opacity: 1;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        margin: 10px;
+        border-radius: 15px;
+      }
+
+      .header {
+        padding: 30px 20px;
+      }
+
+      .header h1 {
+        font-size: 2em;
+      }
+
+      .main-content {
+        padding: 20px;
+      }
+
+      #drop-zone {
+        padding: 40px 20px;
+      }
+
+      .status-info {
+        grid-template-columns: 1fr;
+      }
+
+      .download-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>📧 Email Verifier Pro</h1>
+      <p>Validate email addresses with advanced SMTP verification</p>
+    </div>
+
+    <div class="main-content">
+      <div id="drop-zone">
+        <div class="icon">📁</div>
+        <h3>Drop your CSV file here</h3>
+        <p>Or click to browse and select your email list</p>
+        <small style="display: block; margin-top: 10px; color: #a0aec0;">
+          Supported format: CSV with 'email' column • Max size: 5MB • Max emails: 10,000
+        </small>
+      </div>
+
+      <input type="file" id="file-input" accept=".csv" style="display:none;">
+      
+      <div id="jobs"></div>
+    </div>
+
+    <div class="footer">
+      <p>
+        This tool helps you find qualified leads. Get more sales with VINAYAK
+       </p>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = 'http://localhost:5000';
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input');
+    const jobsContainer = document.getElementById('jobs');
+
+    // Load saved jobs from localStorage
+    let jobList = JSON.parse(localStorage.getItem('verifier-jobs') || '[]');
+    
+    // Initialize existing jobs
+    jobList.forEach(({ job_id, fileName }) => {
+      createJobBlock(job_id, fileName, true);
+    });
+
+    // File drop and upload handlers
+    dropZone.addEventListener('click', () => fileInput.click());
+    
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.classList.add('hover');
+    });
+    
+    dropZone.addEventListener('dragleave', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('hover');
+    });
+    
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('hover');
+      handleFile(e.dataTransfer.files[0]);
+    });
+    
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files[0]) {
+        handleFile(fileInput.files[0]);
+      }
+    });
+
+    // Function to show message to user
+    function showMessage(message, type = 'error') {
+      // Remove any existing messages first
+      const existingMessages = document.querySelectorAll('.message');
+      existingMessages.forEach(msg => msg.remove());
+      
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `message ${type}`;
+      messageDiv.innerHTML = `
+        <div class="message-content">
+          <span class="message-icon">${type === 'error' ? '⚠️' : 'ℹ️'}</span>
+          <span>${message}</span>
+        </div>
+        <button class="close-message" onclick="this.parentElement.remove()">×</button>
+      `;
+      
+      document.body.appendChild(messageDiv);
+      
+      // Trigger reflow to enable transition
+      messageDiv.offsetHeight;
+      messageDiv.style.opacity = '1';
+      
+      // Remove message after 5 seconds if not manually closed
+      if (type !== 'error') {  // Keep error messages until manually closed
+        setTimeout(() => {
+          if (messageDiv.parentNode) {
+            messageDiv.style.opacity = '0';
+            setTimeout(() => messageDiv.remove(), 300);
+          }
+        }, 5000);
+      }
+    }
+
+    function handleFile(file) {
+      if (!file) {
+        showMessage('Please select a file');
+        return;
+      }
+
+      if (!file.name.toLowerCase().endsWith('.csv')) {
+        showMessage('Please select a CSV file');
+        return;
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        showMessage('File is too large. Maximum size is 5MB');
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      // Show loading state
+      dropZone.innerHTML = `
+        <div class="loading"></div>
+        <h3 style="margin-top: 15px;">Uploading...</h3>
+        <p>Please wait while we process your file</p>
+      `;
+
+      fetch(`${API_BASE}/verify`, {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => {
+        if (!response.ok) {
+          return response.json().then(data => {
+            throw new Error(data.error || 'Upload failed');
+          });
+        }
+        return response.json();
+      })
+      .then(({ job_id, message }) => {
+        // Reset drop zone
+        dropZone.innerHTML = `
+          <div class="icon">📁</div>
+          <h3>Drop your CSV file here</h3>
+          <p>Or click to browse and select your email list</p>
+          <small style="display: block; margin-top: 10px; color: #a0aec0;">
+            Supported format: CSV with 'email' column • Max size: 5MB • Max emails: 10,000
+          </small>
+        `;
+
+        // Save job and create block
+        jobList.push({ job_id, fileName: file.name });
+        localStorage.setItem('verifier-jobs', JSON.stringify(jobList));
+        createJobBlock(job_id, file.name);
+        
+        showMessage(message || 'Verification started successfully!', 'success');
+      })
+      .catch(error => {
+        console.error('Upload error:', error);
+        showMessage(error.message || 'Failed to upload file');
+        
+        // Reset drop zone
+        dropZone.innerHTML = `
+          <div class="icon">📁</div>
+          <h3>Drop your CSV file here</h3>
+          <p>Or click to browse and select your email list</p>
+          <small style="display: block; margin-top: 10px; color: #a0aec0;">
+            Supported format: CSV with 'email' column • Max size: 5MB • Max emails: 10,000
+          </small>
+        `;
+      });
+    }
+
+    function createJobBlock(job_id, fileName, isReload = false) {
+      const block = document.createElement('div');
+      block.className = 'job-block';
+      block.id = `job-${job_id}`;
+      
+      block.innerHTML = `
+        <div class="job-header">
+          <div class="job-title">📄 ${fileName}</div>
+          <button class="close-job" title="Close job">✕</button>
+        </div>
+        
+        <div class="progress-container">
+          <div class="progress-bar"></div>
+        </div>
+        
+        <div class="status-info">
+          <div class="status-item">
+            <div class="status-label">Progress</div>
+            <div class="status-value progress-text">Starting...</div>
+          </div>
+          <div class="status-item">
+            <div class="status-label">Status</div>
+            <div class="status-value status-text">Initializing</div>
+          </div>
+        </div>
+        
+        <div class="log-line"></div>
+        <div class="actions">
+          <button class="cancel-btn">Cancel Verification</button>
+        </div>
+      `;
+      
+      jobsContainer.appendChild(block);
+
+      // Get DOM elements
+      const progressBar = block.querySelector('.progress-bar');
+      const progressText = block.querySelector('.progress-text');
+      const statusText = block.querySelector('.status-text');
+      const logLine = block.querySelector('.log-line');
+      const cancelBtn = block.querySelector('.cancel-btn');
+      const closeBtn = block.querySelector('.close-job');
+      const actions = block.querySelector('.actions');
+
+      let cancelled = false;
+      let completed = false;
+
+      // Event handlers
+      const removeJob = () => {
+        block.remove();
+        jobList = jobList.filter(j => j.job_id !== job_id);
+        localStorage.setItem('verifier-jobs', JSON.stringify(jobList));
+      };
+
+      cancelBtn.onclick = () => {
+        if (cancelled || completed) return;
+        
+        cancelled = true;
+        cancelBtn.textContent = 'Cancelling...';
+        cancelBtn.disabled = true;
+        
+        fetch(`${API_BASE}/cancel?job_id=${job_id}`, { method: 'POST' })
+          .then(response => response.json())
+          .then(data => {
+            statusText.textContent = 'Cancelled';
+            logLine.textContent = 'Verification cancelled by user';
+            actions.innerHTML = '<p style="color: #c53030; font-style: italic;">Verification cancelled</p>';
+          })
+          .catch(error => {
+            console.error('Cancel error:', error);
+            cancelBtn.textContent = 'Cancel Verification';
+            cancelBtn.disabled = false;
+            cancelled = false;
+          });
+      };
+
+      closeBtn.onclick = () => {
+        if (!completed && !cancelled) {
+          fetch(`${API_BASE}/cancel?job_id=${job_id}`, { method: 'POST' });
+        }
+        removeJob();
+      };
+
+      // Polling functions
+      const updateProgress = () => {
+        if (cancelled || completed) return;
+
+        fetch(`${API_BASE}/progress?job_id=${job_id}`)
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('Job not found');
+            }
+            return response.json();
+          })
+          .then(data => {
+            const percent = Math.min(100, Math.max(0, data.percent || 0));
+            progressBar.style.width = `${percent}%`;
+            progressText.textContent = `${percent}% (${data.row || 0}/${data.total || 0})`;
+            statusText.textContent = data.status || 'Running';
+            
+            if (percent >= 100 || data.status === 'completed') {
+              completed = true;
+              clearInterval(progressInterval);
+              clearInterval(logInterval);
+              loadCompletedActions();
+            }
+          })
+          .catch(error => {
+            console.error('Progress error:', error);
+            if (error.message === 'Job not found' && !isReload) {
+              removeJob();
+            }
+          });
+      };
+
+      const updateLog = () => {
+        if (cancelled || completed) return;
+
+        fetch(`${API_BASE}/log?job_id=${job_id}`)
+          .then(response => response.text())
+          .then(text => {
+            logLine.textContent = text;
+          })
+          .catch(error => {
+            console.error('Log error:', error);
+          });
+      };
+
+      const loadCompletedActions = () => {
+        // Load stats
+        fetch(`${API_BASE}/stats?job_id=${job_id}`)
+          .then(response => response.json())
+          .then(stats => {
+            const statsHtml = `
+              <div class="stats">
+                <div class="stat-item">
+                  <div class="stat-number">${stats.valid || 0}</div>
+                  <div class="stat-label">Valid</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-number">${stats.risky || 0}</div>
+                  <div class="stat-label">Risky</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-number">${stats.invalid || 0}</div>
+                  <div class="stat-label">Invalid</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-number">${stats.total || 0}</div>
+                  <div class="stat-label">Total</div>
+                </div>
+              </div>
+            `;
+            
+            actions.innerHTML = `
+              <div class="action-section">
+                <div class="action-title">📊 Verification Results</div>
+                ${statsHtml}
+              </div>
+              
+              <div class="action-section">
+                <div class="action-title">💾 Download Results</div>
+                <p>Download the verified email addresses:</p>
+                
+                <div class="download-grid">
+                  <a href="${API_BASE}/download?job_id=${job_id}&type=all" class="download-btn all" download="all_emails.csv">
+                    📥 All (${stats.total || 0})
+                  </a>
+                  <a href="${API_BASE}/download?job_id=${job_id}&type=valid" class="download-btn valid" download="valid_emails.csv" ${(stats.valid || 0) === 0 ? 'style="opacity: 0.5; pointer-events: none;"' : ''}>
+                    ✅ Valid (${stats.valid || 0})
+                  </a>
+                  <a href="${API_BASE}/download?job_id=${job_id}&type=risky" class="download-btn risky" download="risky_emails.csv" ${(stats.risky || 0) === 0 ? 'style="opacity: 0.5; pointer-events: none;"' : ''}>
+                    ⚠️ Risky (${stats.risky || 0})
+                  </a>
+                  <a href="${API_BASE}/download?job_id=${job_id}&type=invalid" class="download-btn invalid" download="invalid_emails.csv" ${(stats.invalid || 0) === 0 ? 'style="opacity: 0.5; pointer-events: none;"' : ''}>
+                    ❌ Invalid (${stats.invalid || 0})
+                  </a>
+                </div>
+              </div>
+              
+              <div class="action-section" style="margin-top: 20px;">
+                <button class="new-verification-btn" onclick="window.location.reload()">
+                  Start New Verification
+                </button>
+              </div>
+            `;
+          })
+          .catch(error => {
+            console.error('Error loading stats:', error);
+            actions.innerHTML = `
+              <div class="error-message">
+                Error loading verification results. Please try again.
+              </div>
+              <div class="action-section" style="margin-top: 20px;">
+                <button class="new-verification-btn" onclick="window.location.reload()">
+                  Start New Verification
+                  🚀 Start New Verification
+                </button>
+              </div>
+            `;
+          });
+      };
+
+      // Start polling if not completed
+      if (!isReload) {
+        const progressInterval = setInterval(updateProgress, 1000);
+        const logInterval = setInterval(updateLog, 2000);
+        
+        // Initial update
+        updateProgress();
+        updateLog();
+      } else {
+        // For reloaded jobs, check if they're completed
+        updateProgress();
+        setTimeout(() => {
+          if (completed) {
+            loadCompletedActions();
+          }
+        }, 1000);
+      }
+    }
+
+    // Clean up localStorage on page load
+    window.addEventListener('beforeunload', () => {
+      // Keep only recent jobs (last 24 hours)
+      const cutoff = Date.now() - (24 * 60 * 60 * 1000);
+      jobList = jobList.filter(job => {
+        // If job doesn't have timestamp, keep it for now
+        return !job.timestamp || job.timestamp > cutoff;
+      });
+      localStorage.setItem('verifier-jobs', JSON.stringify(jobList));
+    });
+  </script>
+</body>
+</html>
