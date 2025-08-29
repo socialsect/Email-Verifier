@@ -701,7 +701,10 @@
       backdrop-filter: blur(20px);
       border: 1px solid rgba(255, 255, 255, 0.2);
     }
-    
+    .message.info {
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
+}
+
     .message.error {
       background: linear-gradient(135deg, var(--error), #F87171);
     }
@@ -826,6 +829,98 @@
       -webkit-backdrop-filter: blur(20px);
       border: 1px solid rgba(255, 255, 255, 0.18);
     }
+    .single-verify {
+  background: var(--surface);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  padding: 24px;
+  margin-bottom: 32px;
+}
+
+.single-verify-title {
+  color: var(--text-primary);
+  font-size: 1.3rem;
+  font-weight: 800;
+  margin-bottom: 14px;
+}
+
+.single-verify-row {
+  display: grid;
+  grid-template-columns: 1fr 160px;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+#single-email-input {
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(0,0,0,0.06);
+  font-size: 1rem;
+  outline: none;
+}
+
+#single-email-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px rgba(105, 90, 241, 0.15);
+}
+
+#single-email-btn {
+  border: none;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
+  color: #fff;
+  transition: transform .15s ease, box-shadow .2s ease;
+  box-shadow: 0 10px 20px rgba(105,90,241,0.25);
+}
+
+#single-email-btn:hover { transform: translateY(-1px); }
+#single-email-btn:disabled { opacity: .6; cursor: not-allowed; }
+
+.single-result { 
+  background: rgba(255,255,255,.6);
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 14px;
+  padding: 16px;
+}
+.hidden { display: none; }
+
+.single-result-top {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.badge {
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: .85rem;
+  letter-spacing: .3px;
+}
+
+.badge.valid   { background: rgba(16,185,129,.15); color: var(--success); border: 1px solid rgba(16,185,129,.35); }
+.badge.risky   { background: rgba(245,158,11,.15); color: var(--warning); border: 1px solid rgba(245,158,11,.35); }
+.badge.invalid { background: rgba(239,68,68,.15); color: var(--error);   border: 1px solid rgba(239,68,68,.35); }
+
+.score { font-weight: 700; color: var(--text-primary); }
+.deliverability { font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; }
+
+.details-list { 
+  margin: 8px 0 0 18px; 
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+@media (max-width: 768px) {
+  .single-verify-row { grid-template-columns: 1fr; }
+}
+
 </style>
 </head>
 <body>
@@ -841,6 +936,23 @@
     </div>
 
     <div class="main-content">
+      <!-- Single Email Verifier -->
+<div class="single-verify">
+  <h3 class="single-verify-title">Quick Check (Single Email)</h3>
+  <div class="single-verify-row">
+    <input id="single-email-input" type="email" placeholder="name@example.com" />
+    <button id="single-email-btn">Verify Email</button>
+  </div>
+  <div id="single-result" class="single-result hidden">
+    <div class="single-result-top">
+      <span id="single-status" class="badge">—</span>
+      <span id="single-score" class="score">Score: —</span>
+    </div>
+    <div id="single-deliverability" class="deliverability">Deliverability: —</div>
+    <ul id="single-details" class="details-list"></ul>
+  </div>
+</div>
+
       <div id="drop-zone">
         <div class="icon">📁</div>
         <h3>Drop your CSV file here</h3>
@@ -1237,6 +1349,84 @@
       });
       localStorage.setItem('verifier-jobs', JSON.stringify(jobList));
     });
+     const singleInput = document.getElementById('single-email-input');
+  const singleBtn = document.getElementById('single-email-btn');
+  const singleResult = document.getElementById('single-result');
+  const singleStatus = document.getElementById('single-status');
+  const singleScore = document.getElementById('single-score');
+  const singleDeliverability = document.getElementById('single-deliverability');
+  const singleDetails = document.getElementById('single-details');
+
+  function setBadge(status) {
+    singleStatus.className = 'badge';
+    if (!status) return;
+    const s = String(status).toLowerCase();
+    singleStatus.classList.add(s);
+    singleStatus.textContent = s === 'valid' ? 'VALID'
+                          : s === 'risky' ? 'RISKY'
+                          : s === 'invalid' ? 'INVALID'
+                          : (String(status).toUpperCase());
+  }
+function looksLikeEmail(v) {
+  // lightweight client-side check (backend still does the real validation)
+  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
+}
+
+async function verifySingleEmail() {
+  const email = (singleInput.value || '').trim();
+  if (!email) { showMessage('Please enter an email'); return; }
+  if (!looksLikeEmail(email)) { showMessage('Enter a valid email address'); return; }
+
+  singleBtn.disabled = true;
+  const oldText = singleBtn.textContent;
+  singleBtn.innerHTML = `<span class="loading" style="vertical-align:middle; width:18px; height:18px; border-width:2px;"></span> Verifying…`;
+
+  try {
+    const url = `${API_BASE}/verify-single?email=${encodeURIComponent(email)}`;
+    const res = await fetch(url, { method: 'GET' });
+
+    // Safely parse JSON (even if server throws HTML/plain text)
+    let data = null;
+    try { data = await res.json(); } catch { data = null; }
+
+    if (!res.ok) {
+      const msg = (data && (data.error || data.details?.[0])) || `Verification failed (${res.status})`;
+      throw new Error(msg);
+    }
+
+    singleResult.classList.remove('hidden');
+    setBadge(data.status);
+    singleScore.textContent = `Score: ${Number(data.confidence ?? 0)} / 100`;
+    singleDeliverability.textContent = `Deliverability: ${data.deliverability || 'UNKNOWN'}`;
+
+    singleDetails.innerHTML = '';
+    (data.details || []).forEach(d => {
+      const li = document.createElement('li');
+      li.textContent = d;
+      singleDetails.appendChild(li);
+    });
+
+    showMessage(`Checked ${data.email}: ${data.status?.toUpperCase() || 'UNKNOWN'}`, 
+      data.status === 'valid' ? 'success' : 'info');
+
+  } catch (err) {
+    singleResult.classList.remove('hidden');
+    setBadge('invalid');
+    singleScore.textContent = 'Score: —';
+    singleDeliverability.textContent = 'Deliverability: UNKNOWN';
+    singleDetails.innerHTML = `<li>${err.message || 'Something went wrong'}</li>`;
+    showMessage(err.message || 'Verification failed');
+  } finally {
+    singleBtn.disabled = false;
+    singleBtn.textContent = oldText;
+  }
+}
+
+  // Button + Enter key
+  if (singleBtn) singleBtn.addEventListener('click', verifySingleEmail);
+  if (singleInput) singleInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') verifySingleEmail();
+  });
   </script>
 </body>
 </html>
