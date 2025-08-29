@@ -920,6 +920,31 @@
 @media (max-width: 768px) {
   .single-verify-row { grid-template-columns: 1fr; }
 }
+.confidence { margin: 10px 0 12px; }
+.confidence-header {
+  display: flex; justify-content: space-between; align-items: center;
+  font-weight: 700; color: var(--text-primary); margin-bottom: 6px;
+}
+.confidence-scale {
+  position: relative; height: 10px; border-radius: 999px; overflow: hidden;
+  background: linear-gradient(90deg,
+    #EF4444 0%, #EF4444 25%,      /* 0–25 red */
+    #F59E0B 25%, #F59E0B 75%,     /* 25–75 orange */
+    #10B981 75%, #10B981 100%     /* 75–100 green */
+  );
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.08);
+}
+.confidence-bar { width: 100%; height: 100%; } /* gradient lives on parent */
+.confidence-marker {
+  position: absolute; top: -2px; width: 3px; height: 14px; border-radius: 2px;
+  background: #10B981; box-shadow: 0 0 0 2px rgba(16,185,129,0.25);
+  transition: left .3s ease;
+}
+.confidence-ticks {
+  display: flex; justify-content: space-between; font-size: 0.8rem;
+  color: var(--text-secondary); margin-top: 6px;
+}
+@media (max-width:768px){ .confidence-ticks { font-size: 0.75rem; } }
 
 </style>
 </head>
@@ -949,6 +974,22 @@
       <span id="single-score" class="score">Score: —</span>
     </div>
     <div id="single-deliverability" class="deliverability">Deliverability: —</div>
+    <div class="confidence" aria-label="Email quality score">
+  <div class="confidence-header">
+    <span>Email quality score</span>
+    <span id="confidence-value">—</span>
+  </div>
+
+  <div class="confidence-scale">
+    <div class="confidence-bar"></div>
+    <div id="confidence-marker" class="confidence-marker" style="left: 0%"></div>
+  </div>
+
+  <div class="confidence-ticks">
+    <span>0</span><span>25</span><span>50</span><span>75</span><span>100</span>
+  </div>
+</div>
+
     <ul id="single-details" class="details-list"></ul>
   </div>
 </div>
@@ -1397,6 +1438,7 @@ async function verifySingleEmail() {
     singleResult.classList.remove('hidden');
     setBadge(data.status);
     singleScore.textContent = `Score: ${Number(data.confidence ?? 0)} / 100`;
+    updateConfidence(data.confidence);
     singleDeliverability.textContent = `Deliverability: ${data.deliverability || 'UNKNOWN'}`;
 
     singleDetails.innerHTML = '';
@@ -1427,6 +1469,15 @@ async function verifySingleEmail() {
   if (singleInput) singleInput.addEventListener('keydown', e => {
     if (e.key === 'Enter') verifySingleEmail();
   });
+    function updateConfidence(conf) {
+  const c = Math.max(0, Math.min(100, Number(conf) || 0));
+  const marker = document.getElementById('confidence-marker');
+  const label  = document.getElementById('confidence-value');
+  if (!marker || !label) return;
+  marker.style.left = `calc(${c}% - 1.5px)`;  // center the 3px marker
+  label.textContent = `${c}%`;
+}
+
   </script>
 </body>
 </html>
