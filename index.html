@@ -1113,7 +1113,7 @@
         <p>Please wait while we process your file</p>
       `;
 
-      fetch(`${API_BASE}/verify`, {
+      fetch(`${API_BASE}/upload`, {
         method: 'POST',
         body: formData
       })
@@ -1219,7 +1219,7 @@
         cancelBtn.textContent = 'Cancelling...';
         cancelBtn.disabled = true;
         
-        fetch(`${API_BASE}/cancel?job_id=${job_id}`, { method: 'POST' })
+       fetch(`${API_BASE}/cancel/${job_id}`, { method: 'POST' })
           .then(response => response.json())
           .then(data => {
             statusText.textContent = 'Cancelled';
@@ -1236,7 +1236,7 @@
 
       closeBtn.onclick = () => {
         if (!completed && !cancelled) {
-          fetch(`${API_BASE}/cancel?job_id=${job_id}`, { method: 'POST' });
+         fetch(`${API_BASE}/cancel/${job_id}`, { method: 'POST' });
         }
         removeJob();
       };
@@ -1245,7 +1245,8 @@
       const updateProgress = () => {
         if (cancelled || completed) return;
 
-        fetch(`${API_BASE}/progress?job_id=${job_id}`)
+   fetch(`${API_BASE}/status/${job_id}`)
+
           .then(response => {
             if (!response.ok) {
               throw new Error('Job not found');
@@ -1276,7 +1277,7 @@
       const updateLog = () => {
         if (cancelled || completed) return;
 
-        fetch(`${API_BASE}/log?job_id=${job_id}`)
+        fetch(`${API_BASE}/log/${job_id}`)
           .then(response => response.text())
           .then(text => {
             logLine.textContent = text;
@@ -1288,7 +1289,7 @@
 
       const loadCompletedActions = () => {
         // Load stats
-        fetch(`${API_BASE}/stats?job_id=${job_id}`)
+       fetch(`${API_BASE}/results/${job_id}`)
           .then(response => response.json())
           .then(stats => {
             const statsHtml = `
@@ -1323,16 +1324,17 @@
                 <p>Download the verified email addresses:</p>
                 
                 <div class="download-grid">
-                  <a href="${API_BASE}/download?job_id=${job_id}&type=all" class="download-btn all" download="all_emails.csv">
+                  <a href="${API_BASE}/download/${job_id}?type=all" class="download-btn all" download="all_emails.csv">
                     📥 All (${stats.total || 0})
                   </a>
-                  <a href="${API_BASE}/download?job_id=${job_id}&type=valid" class="download-btn valid" download="valid_emails.csv" ${(stats.valid || 0) === 0 ? 'style="opacity: 0.5; pointer-events: none;"' : ''}>
+                  <a href="${API_BASE}/download/${job_id}?type=valid"
+ class="download-btn valid" download="valid_emails.csv" ${(stats.valid || 0) === 0 ? 'style="opacity: 0.5; pointer-events: none;"' : ''}>
                     ✅ Valid (${stats.valid || 0})
                   </a>
-                  <a href="${API_BASE}/download?job_id=${job_id}&type=risky" class="download-btn risky" download="risky_emails.csv" ${(stats.risky || 0) === 0 ? 'style="opacity: 0.5; pointer-events: none;"' : ''}>
+                  <a href="${API_BASE}/download/${job_id}?type=risky" class="download-btn risky" download="risky_emails.csv" ${(stats.risky || 0) === 0 ? 'style="opacity: 0.5; pointer-events: none;"' : ''}>
                     ⚠️ Risky (${stats.risky || 0})
                   </a>
-                  <a href="${API_BASE}/download?job_id=${job_id}&type=invalid" class="download-btn invalid" download="invalid_emails.csv" ${(stats.invalid || 0) === 0 ? 'style="opacity: 0.5; pointer-events: none;"' : ''}>
+                  <a href="${API_BASE}/download/${job_id}?type=invalid" class="download-btn invalid" download="invalid_emails.csv" ${(stats.invalid || 0) === 0 ? 'style="opacity: 0.5; pointer-events: none;"' : ''}>
                     ❌ Invalid (${stats.invalid || 0})
                   </a>
                 </div>
