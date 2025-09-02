@@ -583,7 +583,9 @@
             throw new Error(data.error || 'Upload failed');
           });
         }
+        console.log(response.json);
         return response.json();
+        
       })
       .then(({ job_id, message }) => {
         // Reset drop zone
